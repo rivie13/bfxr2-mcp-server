@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
     "clean-css": "^5.3.3",
     "cleanjs": "^1.0.1",
     "uglify-js": "^3.19.3"
@@ -9,6 +10,7 @@
   "description": "sound effect generator (Bfxr.net)",
   "main": "compile.js",
   "scripts": {
+    "mcp": "node mcp-server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

@@ -10,6 +10,48 @@ It's currently BETA, and new things should be coming to it, but the main additio
 ## Development
 cf. [DEVELOPMENT.md](https://github.com/increpare/bfxr2/blob/master/DEVELOPMENT.md).
 
+## MCP Server
+This repo includes a Model Context Protocol (MCP) server for headless sound generation.
+
+### VS Code MCP setup
+1. Open the workspace in VS Code.
+2. Ensure dependencies are installed.
+3. Add the MCP server entry to VS Code settings:
+	- This repo includes a workspace-scoped setting at [.vscode/settings.json](.vscode/settings.json) that configures the server.
+4. Reload VS Code to pick up the MCP server configuration.
+
+### Try it in VS Code
+Open Copilot Chat and ask it to call tools like:
+- “List available synths using the MCP server.”
+- “List presets for the Bfxr synth.”
+- “Generate a short coin pickup sound and return a data URI.”
+
+### Install
+1. Install dependencies.
+2. Run the server with the MCP stdio transport.
+
+### Run
+Use the script:
+```
+npm run mcp
+```
+
+### Tools
+- `bfxr_list_synths` — lists available synth engines.
+- `bfxr_list_presets` — lists preset generators (per synth).
+- `bfxr_list_params` — lists parameter metadata (min/max/default) per synth.
+- `bfxr_generate_wav` — generates a WAV (returns base64 + optional data URI).
+
+Tip: You can pass `outputPath` to save the WAV in the workspace and set `returnDataUri: false` and `returnBase64: false` to keep responses small.
+
+### Supported synths
+- Bfxr (full parameter + preset support).
+- Footsteppr (terrain-based footsteps).
+
+### Not supported in MCP
+- Transfxr (depends on browser-only APIs like `window`/`document`).
+- UI-only features (playback, canvases, and DOM rendering).
+
 ## Archaeology
 
 I don't know if it's genetically related, but I believe that _why made a program called sound foley (which I haven't been able to get to work) which looks quite similar to Sfxr in design based on what I've seen of his _why's presentation of it.

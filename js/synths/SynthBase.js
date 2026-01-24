@@ -9,7 +9,7 @@ class SynthBase {
         for (var i = 0; i < this.param_info.length; i++) {
             var param = this.param_info[i];
             //if object, then it's a buttonselect
-            if (param.constructor === Array) {
+            if (Array.isArray(param)) {
                 var param_name = param[2];
                 var param_default_value = param[3];
                 result[param_name] = param_default_value;
@@ -101,7 +101,7 @@ class SynthBase {
     get_param_normalized(param){
         var result={};
         //if array
-        if (param.constructor === Array) {
+        if (Array.isArray(param)) {
             result.name = param[2];
             result.default_value = param[3];
             result.min_value = param[4];
@@ -192,7 +192,7 @@ class SynthBase {
     get_param_info(param_name) {
         for (var i = 0; i < this.param_info.length; i++) {
             var param = this.param_info[i];
-            if (param.constructor === Array) {
+            if (Array.isArray(param)) {
                 if (param[2] === param_name) {
                     return param;
                 }
@@ -439,7 +439,15 @@ class SynthBase {
             for (var param_name in bounds_dictionary) {
                 var possible_values = bounds_dictionary[param_name];
                 var param_info = this.get_param_info(param_name);                
+                if (!param_info) {
+                    console.error(`Skipping unknown param: ${param_name}`);
+                    continue;
+                }
                 var param_info_normalized = this.get_param_normalized(param_info);
+                if (!param_info_normalized || !param_info_normalized.type) {
+                    console.error(`Skipping param with unknown type: ${param_name}`);
+                    continue;
+                }
                 switch (param_info_normalized.type) {
                     case "BUTTONSELECT":
                         var random_value = possible_values[Math.floor(Math.random() * possible_values.length)];
@@ -452,7 +460,7 @@ class SynthBase {
                         this.set_param(param_name, random_value,true);
                         break;
                     default:
-                        console.error(`Unknown param type: ${param_info.type}`);
+                        console.error(`Unknown param type: ${param_info_normalized.type}`);
                 }
             }
         }

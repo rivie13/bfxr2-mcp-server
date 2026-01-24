@@ -1,0 +1,9 @@
+{
+  "mcp.servers": {
+    "bfxr2": {
+      "command": "node",
+      "args": ["mcp-server.js"],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}
