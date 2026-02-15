@@ -8,8 +8,16 @@ const { CallToolRequestSchema, ListToolsRequestSchema } = require("@modelcontext
 
 const ROOT_DIR = __dirname;
 const SUPPORTED_SYNTHS = {
-  bfxr: { name: "Bfxr", className: "Bfxr" },
-  footsteppr: { name: "Footsteppr", className: "Footsteppr" },
+  bfxr: {
+    name: "Bfxr",
+    className: "Bfxr",
+    description: "General-purpose retro game SFX synth for impacts, lasers, UI and pickups.",
+  },
+  footsteppr: {
+    name: "Footsteppr",
+    className: "Footsteppr",
+    description: "Physical footstep synthesizer focused on terrain and gait controls.",
+  },
 };
 
 const runtime = {
@@ -221,8 +229,18 @@ function generateWav({
   outputPath,
 }) {
   const synthInstance = getSynthInstance(synth);
-  const presetInfo = withSeed(seed, () => applyPreset(synthInstance, preset));
-  applyParams(synthInstance, params);
+  const presetId = typeof preset === "string" ? preset.toLowerCase() : "";
+  let presetInfo = null;
+
+  if (presetId === "mutate" && params && typeof params === "object") {
+    applyParams(synthInstance, params);
+    presetInfo = withSeed(seed, () => applyPreset(synthInstance, preset));
+  } else {
+    presetInfo = withSeed(seed, () => applyPreset(synthInstance, preset));
+    if (presetId !== "randomize") {
+      applyParams(synthInstance, params);
+    }
+  }
 
   let floatBuffer;
   let sampleRate = runtime.SAMPLE_RATE;
@@ -273,12 +291,48 @@ function generateWav({
     wavBase64: returnBase64 ? base64 : null,
     dataUri,
     outputPath: savedTo,
+    seed: seed === undefined || seed === null ? null : seed,
   };
 }
 
 function listParams(synth) {
   const synthInstance = getSynthInstance(synth);
-  return synthInstance.param_info.map((param) => synthInstance.get_param_normalized(param));
+  return synthInstance.param_info.map((param) => {
+    const normalized = synthInstance.get_param_normalized(param);
+    const result = {
+      name: normalized.name,
+      default: normalized.default_value,
+      min: normalized.min_value,
+      max: normalized.max_value,
+      type: normalized.type,
+    };
+
+    if (Array.isArray(param)) {
+      result.displayName = param[0] || normalized.name;
+      result.description = param[1] || "";
+    } else {
+      result.displayName = param.display_name || normalized.name;
+      result.description = param.tooltip || "";
+      if (Array.isArray(param.values)) {
+        result.values = param.values.map((entry) => {
+          if (!Array.isArray(entry)) {
+            return {
+              name: String(entry),
+              description: "",
+              id: null,
+            };
+          }
+          return {
+            name: entry[0] || "",
+            description: entry[1] || "",
+            id: entry.length > 2 ? entry[2] : null,
+          };
+        });
+      }
+    }
+
+    return result;
+  });
 }
 
 function listPresets(synth) {
@@ -291,6 +345,7 @@ function listSynths() {
   return Object.keys(SUPPORTED_SYNTHS).map((key) => ({
     id: key,
     name: SUPPORTED_SYNTHS[key].name,
+    description: SUPPORTED_SYNTHS[key].description || "",
   }));
 }
 
